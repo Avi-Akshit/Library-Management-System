@@ -1,0 +1,11 @@
+"use client";
+import { useState } from "react";
+import useSWR from "swr";
+import { createRoomBooking, getRoomBookings, getRooms } from "@/lib/api";
+
+const slots = Array.from({ length: 8 }, (_, index) => `${String(index + 9).padStart(2, "0")}:00`);
+export default function RoomsPage() {
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10)); const { data: rooms } = useSWR("rooms", getRooms); const [roomId, setRoomId] = useState(""); const activeId = roomId || rooms?.[0]?._id || ""; const { data: bookings, mutate } = useSWR(activeId ? ["room-bookings", activeId, date] : null, () => getRoomBookings(activeId, date)); const [message, setMessage] = useState("");
+  const choose = async (slot: string) => { const startsAt = new Date(`${date}T${slot}:00`).toISOString(); const endsAt = new Date(new Date(startsAt).getTime() + 60 * 60 * 1000).toISOString(); try { await createRoomBooking({ roomId: activeId, startsAt, endsAt }); setMessage(`Booked ${slot} to ${String(Number(slot.slice(0, 2)) + 1).padStart(2, "0")}:00.`); mutate(); } catch (error) { setMessage((error as Error).message); } };
+  return <div className="max-w-3xl"><h1 className="font-serif text-[28px]">Study rooms</h1><p className="mt-1 text-[11px] text-ink-muted">Choose a room and an available hour.</p><div className="mt-6 flex flex-wrap gap-2">{rooms?.map((room) => <button key={room._id} onClick={() => setRoomId(room._id)} disabled={!room.isEnabled} className={`border px-3 py-2 text-[11px] ${activeId === room._id ? "border-[#9C7A2E] bg-paper-alt" : "border-paper-line"} disabled:opacity-40`}>{room.name} - {room.capacity} seats</button>)}</div><input type="date" value={date} onChange={(event) => setDate(event.target.value)} className="mt-5 border border-paper-line bg-paper-alt px-2 py-2 text-[11px]" /><div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">{slots.map((slot) => { const booked = bookings?.some((booking) => new Date(booking.startsAt).toISOString().slice(11, 16) === slot); return <button key={slot} disabled={booked} onClick={() => choose(slot)} className={`border px-3 py-4 text-[12px] ${booked ? "border-[#9C3B2E] text-[#9C3B2E]" : "border-[#3E6B4A] text-[#3E6B4A] hover:bg-[#3E6B4A] hover:text-paper"}`}>{slot} {booked ? "Booked" : "Available"}</button>; })}</div>{message && <p className="mt-4 text-[12px] text-ink-muted">{message}</p>}</div>;
+}

@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --paper: #f3efe4;
+    --paper-alt: #f8f5ec;
+    --paper-line: #c9c0ac;
+    --ink: #1c1b19;
+    --ink-muted: #6e6a61;
+    --brass: #b8934a;
+    --stamp-red: #9c3b2e;
+    --stamp-blue: #35507a;
+    --stamp-green: #3e6b4a;
+    --wood: #463527;
+    --wood-drawer: #5a4630;
+    --wood-drawer-active: #6b5539;
+    --drawer-text: #ede6d3;
+    --drawer-text-muted: #b7ad96;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    background-color: #e8e3d4;
+    color: var(--ink);
+    font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  }
+
+  input.underline-input {
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid var(--ink);
+    background: transparent;
+    padding: 7px 2px;
+    font-size: 14px;
+    color: var(--ink);
+    font-family: inherit;
+    outline: none;
+  }
+  input.underline-input:focus {
+    border-bottom-width: 2px;
+    border-color: var(--stamp-blue);
+  }
+}
+
+@layer components {
+  .ruled-paper {
+    background-color: var(--paper-alt);
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 27px,
+      rgba(201, 192, 172, 0.58) 28px
+    );
+  }
+
+  .stamp-button {
+    border: 1.5px solid var(--stamp-blue);
+    background: transparent;
+    color: var(--stamp-blue);
+    font-size: 12px;
+    letter-spacing: 0;
+    padding: 10px 16px;
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+
+  .stamp-button:hover:not(:disabled) {
+    background: var(--stamp-blue);
+    color: var(--paper);
+  }
+
+  .stamp-button--return {
+    border-color: var(--stamp-green);
+    color: var(--stamp-green);
+  }
+
+  .stamp-button--return:hover:not(:disabled) {
+    background: var(--stamp-green);
+    color: var(--paper);
+  }
+}

@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lms-backend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: lms-backend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Validate OpenAPI spec
+        run: node -e "const {openApiSpec}=require('./dist/src/openapi/spec.js'); if(!openApiSpec.openapi) process.exit(1)"
+      - name: Ensure secrets are not committed
+        run: test ! -f .env && test ! -f ../.env
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lms-web
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: lms-web/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit

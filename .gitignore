@@ -1,0 +1,10 @@
+node_modules
+dist
+.next
+# Local configuration may hold credentials. Commit only the checked-in templates.
+.env
+.env.*
+!.env.example
+*.log
+playwright-report
+test-results

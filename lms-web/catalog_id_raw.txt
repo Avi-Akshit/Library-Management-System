@@ -1,0 +1,84 @@
+"use client";
+import useSWR from "swr";
+import { getItem, checkout, placeHold } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useState } from "react";
+import { useParams } from "next/navigation";
+
+export default function ItemDetail() {
+  const { id } = useParams() as { id: string };
+  const { user } = useAuth();
+  const { data: item, mutate } = useSWR(`/catalog/${id}`, () => getItem(id));
+  const [checkoutUserId, setCheckoutUserId] = useState("");
+  const isLibrarian = user?.roles.some(r => ["librarian", "branch_admin", "super_admin"].includes(r));
+
+  if (!item) return <div>Loading...</div>;
+
+  return (
+    <div className="space-y-6 max-w-4xl">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">{item.title}</h1>
+        <p className="text-lg text-muted mb-4">{item.creators}</p>
+        <div className="flex gap-2 mb-4">
+          <Badge>{item.itemType}</Badge>
+          <Badge variant={item.availability === "available" ? "available" : "default"}>{item.availability}</Badge>
+        </div>
+        <p className="text-primary leading-relaxed">{item.description}</p>
+      </div>
+
+      {isLibrarian ? (
+        <Card>
+          <CardHeader><CardTitle>Librarian Actions</CardTitle></CardHeader>
+          <CardContent className="flex gap-2">
+            <Input placeholder="User ID for checkout" value={checkoutUserId} onChange={e => setCheckoutUserId(e.target.value)} />
+            <Button onClick={async () => {
+              if (checkoutUserId) {
+                await checkout(checkoutUserId, id);
+                mutate();
+                alert("Checked out!");
+              }
+            }}>Checkout</Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <Button onClick={async () => {
+          await placeHold(id);
+          alert("Hold placed!");
+        }}>Place Hold</Button>
+      )}
+
+      <Card>
+        <CardHeader><CardTitle>Copies</CardTitle></CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Barcode</TableHead>
+                <TableHead>Branch</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {item.copies?.map(c => (
+                <TableRow key={c.id}>
+                  <TableCell className="font-mono">{c.barcode}</TableCell>
+                  <TableCell>{c.branch}</TableCell>
+                  <TableCell>
+                    <Badge variant={c.status === "available" ? "available" : c.status === "checked_out" ? "checked_out" : "default"}>
+                      {c.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}\n

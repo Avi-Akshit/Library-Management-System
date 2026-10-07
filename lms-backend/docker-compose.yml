@@ -1,0 +1,22 @@
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  api:
+    build: .
+    depends_on:
+      - mongo
+    environment:
+      NODE_ENV: development
+      PORT: 4000
+      MONGODB_URI: mongodb://mongo:27017/lms
+      JWT_SECRET: local-development-secret
+    ports:
+      - "4000:4000"
+
+volumes:
+  mongo-data:

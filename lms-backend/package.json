@@ -1,0 +1,47 @@
+{
+  "name": "lms-backend",
+  "version": "1.0.0",
+  "description": "Production-grade Library Management System API",
+  "main": "dist/src/server.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev:no-db": "set SKIP_DB=true&& ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && node --test dist/tests/policyEngine.test.js dist/tests/eventBus.test.js dist/tests/integration/*.test.js",
+    "test:unit": "npm run build && node --test dist/tests/policyEngine.test.js dist/tests/eventBus.test.js",
+    "test:integration": "npm run build && node --test dist/tests/integration/*.test.js",
+    "seed": "ts-node-dev --transpile-only src/seed.ts",
+    "start": "node dist/src/server.js",
+    "start:no-db": "set SKIP_DB=true&& node dist/src/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@faker-js/faker": "^10.6.0",
+    "@scalar/express-api-reference": "^0.10.17",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.9.4",
+    "nodemailer": "^10.0.16",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^26.4.1",
+    "@types/nodemailer": "^8.0.2",
+    "@types/supertest": "^7.2.1",
+    "mongodb-memory-server": "^11.2.0",
+    "supertest": "^7.2.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^7.0.2"
+  }
+}

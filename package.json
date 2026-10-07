@@ -1,0 +1,11 @@
+{
+  "name": "lms",
+  "private": true,
+  "workspaces": ["lms-backend", "lms-web", "packages/shared-types"],
+  "scripts": {
+    "test": "npm test --workspace=lms-backend",
+    "typecheck": "npm run typecheck --workspace=lms-backend",
+    "dev:api": "npm run dev --workspace=lms-backend",
+    "dev:web": "npm run dev --workspace=lms-web"
+  }
+}
