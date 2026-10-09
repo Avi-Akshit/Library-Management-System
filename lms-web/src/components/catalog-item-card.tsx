@@ -17,7 +17,7 @@ export function CatalogItemCard({ item }: { item: Item }) {
   const total = item.copies?.length ?? 0;
 
   return (
-    <Link href={`/catalog/${item._id}`} className="block h-full">
+    <Link href={`/catalog/item?id=${item._id}`} className="block h-full">
       <article className="ruled-paper relative flex h-full min-h-[228px] flex-col border border-paper-line p-5 transition-colors hover:border-ink-muted">
         <Badge variant={badgeVariant(status)} className="absolute right-4 top-4 rotate-[3deg]">
           {shelfStatusLabel(status)}

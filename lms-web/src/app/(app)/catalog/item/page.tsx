@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
-import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createInterest, getCatalog, getEditions, getItem, checkout, placeHold, reportItemIssue } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 import { Badge } from "@/components/ui/badge";
@@ -15,10 +14,10 @@ import { badgeVariant, classificationCode, classificationLabel, copiesOnShelf, i
 const STAFF_ROLES = ["librarian", "branch_admin", "super_admin"];
 
 export default function ItemDetail() {
-  const { id } = useParams() as { id: string };
+  const [id, setId] = useState("");
   const { user } = useAuth();
-  const { data: item, mutate, isLoading } = useSWR(`/catalog/${id}`, () => getItem(id));
-  const { data: editionData } = useSWR(`/catalog/${id}/editions`, () => getEditions(id));
+  const { data: item, mutate, isLoading } = useSWR(id ? `/catalog/${id}` : null, () => getItem(id));
+  const { data: editionData } = useSWR(id ? `/catalog/${id}/editions` : null, () => getEditions(id));
   const { data: catalog } = useSWR("catalog-related", () => getCatalog());
   const [checkoutUserId, setCheckoutUserId] = useState("");
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
@@ -27,11 +26,16 @@ export default function ItemDetail() {
   const [showIssue, setShowIssue] = useState(false);
   const isStaff = user?.roles.some((role) => STAFF_ROLES.includes(role));
 
+  useEffect(() => {
+    setId(new URLSearchParams(window.location.search).get("id") ?? "");
+  }, []);
+
   const flash = (text: string, ok = true) => {
     setMsg({ text, ok });
     window.setTimeout(() => setMsg(null), 3500);
   };
 
+  if (!id) return <p className="text-[12px] text-ink-muted">No catalog record was selected.</p>;
   if (isLoading) return <div className="space-y-4"><Skeleton className="h-8 w-2/3" /><Skeleton className="h-72 w-full" /></div>;
   if (!item) return <p className="text-[12px] text-ink-muted">This record is not filed in the catalog.</p>;
 
@@ -45,7 +49,7 @@ export default function ItemDetail() {
     <div className="max-w-6xl">
       <Link href="/catalog" className="border-b border-paper-line pb-1 text-[11px] text-ink-muted hover:text-ink">Back to catalog</Link>
       {msg && <p className={`mt-5 text-[12px] ${msg.ok ? "text-status-available-text" : "text-status-overdue-text"}`}>{msg.text}</p>}
-      {(editionData?.editions.length ?? 0) > 1 && <div className="mt-5 flex flex-wrap border-b border-paper-line">{editionData!.editions.map((edition) => <Link key={edition._id} href={`/catalog/${edition._id}`} className={`border border-b-0 px-4 py-2 text-[11px] ${edition._id === item._id ? "bg-[#35507A] text-paper" : "text-ink-muted"}`}>{edition.format || itemTypeLabel(edition.itemType)}</Link>)}</div>}
+      {(editionData?.editions.length ?? 0) > 1 && <div className="mt-5 flex flex-wrap border-b border-paper-line">{editionData!.editions.map((edition) => <Link key={edition._id} href={`/catalog/item?id=${edition._id}`} className={`border border-b-0 px-4 py-2 text-[11px] ${edition._id === item._id ? "bg-[#35507A] text-paper" : "text-ink-muted"}`}>{edition.format || itemTypeLabel(edition.itemType)}</Link>)}</div>}
       <div className="mt-8 grid gap-8 md:grid-cols-[190px_minmax(0,1fr)]">
         <div className="flex h-[280px] items-end bg-[#35507A] p-4 shadow-[4px_4px_0_rgba(28,27,25,0.12)]">
           <span className="font-serif text-[16px] text-paper [writing-mode:vertical-rl]">{item.creators?.[0] || "Catalog record"}</span>
