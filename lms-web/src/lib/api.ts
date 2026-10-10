@@ -1,6 +1,15 @@
+import { isDemoMode, demoLogin, demoGetMe, demoRefreshToken } from "./demo-auth";
+
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
 
 export async function apiFetch(path: string, options: RequestInit = {}) {
+  // In demo mode, return safe defaults for any API call not explicitly handled
+  if (isDemoMode()) {
+    const method = (options.method ?? "GET").toUpperCase();
+    if (method === "GET") return [];
+    return {};
+  }
+
   const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -97,6 +106,7 @@ export interface FineLedgerEntry {
 // ─── Auth ────────────────────────────────────────────────────────────────────
 
 export async function login(identity: string, password: string) {
+  if (isDemoMode()) return demoLogin(identity, password);
   return apiFetch('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ identity, password }),
@@ -104,6 +114,7 @@ export async function login(identity: string, password: string) {
 }
 
 export async function register(name: string, email: string, password: string, username?: string) {
+  if (isDemoMode()) throw new Error("Registration is not available in demo mode");
   return apiFetch('/auth/register', {
     method: 'POST',
     body: JSON.stringify({ name, email, password, username }),
@@ -111,10 +122,15 @@ export async function register(name: string, email: string, password: string, us
 }
 
 export async function getMe(): Promise<User> {
+  if (isDemoMode()) {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    return demoGetMe(token ?? "");
+  }
   return apiFetch('/auth/me');
 }
 
 export async function refreshToken(rt: string) {
+  if (isDemoMode()) return demoRefreshToken();
   return apiFetch('/auth/refresh', {
     method: 'POST',
     body: JSON.stringify({ refreshToken: rt }),
@@ -122,6 +138,7 @@ export async function refreshToken(rt: string) {
 }
 
 export async function logout(rt: string) {
+  if (isDemoMode()) return null;
   return apiFetch('/auth/logout', {
     method: 'POST',
     body: JSON.stringify({ refreshToken: rt }),

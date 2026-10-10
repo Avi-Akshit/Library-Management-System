@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000",
+    NEXT_PUBLIC_API_URL: isGitHubPages ? "" : (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000"),
     NEXT_PUBLIC_BASE_PATH: isGitHubPages ? repoBasePath : "",
   },
 };
